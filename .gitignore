@@ -1,0 +1,27 @@
+# Dataset (too large)
+Dataset_VO/
+
+# Windows "downloaded from internet" metadata (created when copying files into WSL)
+*:Zone.Identifier
+*Zone.Identifier
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Run outputs
+*.log
+output*.txt
