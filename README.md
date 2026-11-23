@@ -4,6 +4,12 @@ A monocular Visual SLAM system written in Python. It takes an image sequence rec
 
 I built this as part of the *Navigation, Mapping and Localization Algorithms* course (Visual Odometry and 3D Reconstruction – SLAM exercise). Most of the core geometry is implemented by hand, using the equations from the course (triangulation, epipolar error, reprojection error, Kalman filter), with OpenCV used for feature detection, the essential matrix and PnP.
 
+<p align="center">
+  <img src="docs/SLAM5.png" width="700" alt="3D map and trajectory after loop closure">
+  <br>
+  <em>The 3D point cloud and the estimated trajectory right after a loop closure. Red is the trajectory before the correction, green is the corrected one.</em>
+</p>
+
 ---
 
 ## What the system does
@@ -20,6 +26,26 @@ For each new image the pipeline runs these steps:
 8. **PnP re-localization.** Every 10 frames the pose is re-estimated with `solvePnPRansac` against 3D points already in the map.
 9. **Loop closure.** The current frame is compared to old frames. When a revisit is found and verified geometrically, the accumulated drift is spread back over the loop.
 10. **Visualization.** Trajectory, map, loop closures and the live camera image are drawn in Pangolin.
+
+---
+
+## Screenshots
+
+### Feature matching before and after RANSAC
+In each image, the bottom window shows all descriptor matches and the top window shows only the matches that survive the RANSAC filter on the essential matrix. The diagonal lines below (wrong matches) disappear once the filter is applied.
+
+<p align="center">
+  <img src="docs/SLAM1.png" width="420" alt="Matches before and after RANSAC - scene 1">
+  <img src="docs/SLAM2.png" width="420" alt="Matches before and after RANSAC - scene 2">
+</p>
+
+### Trajectory and map while running
+The live camera image with ORB keypoints is in the top-left corner. The gray points are the triangulated 3D map, and the green line is the trajectory estimated by visual odometry + EKF.
+
+<p align="center">
+  <img src="docs/SLAM3.png" width="420" alt="Pangolin view of the map and trajectory - 1">
+  <img src="docs/SLAM4.png" width="420" alt="Pangolin view of the map and trajectory - 2">
+</p>
 
 ---
 
@@ -53,7 +79,7 @@ Every 10 frames the pose is computed again from 2D–3D correspondences with `so
 - **Detection:** every 5 successful frames, the current frame is matched against candidates that are at least `LC_MIN_GAP` (150) frames older. The candidate with the most good descriptor matches (Hamming distance < 50) is selected if it has at least 150 of them.
 - **Geometric verification:** PnP against the candidate's 3D points must give at least `LC_MIN_INLIERS` (40) inliers. This step stops scenes that only *look* similar from being accepted.
 - **Correction:** the PnP result says where the drone is according to the *old* map. The difference from the current estimate is the accumulated drift. It is spread linearly over all frames in the loop (0 at the old frame, the full drift at the current one), and map points are shifted the same way. This is a simplified, translation-only version of pose-graph optimization.
-- **Visualization:** the trajectory before correction is kept and drawn in red, and the loop link is drawn in yellow, so the effect of the closure is visible.
+- **Visualization:** the trajectory before correction is kept and drawn in red, and the loop link is drawn in yellow, so the effect of the closure is visible (see the image at the top of this page).
 
 A note on `LC_MIN_GAP`: with a small gap (around 50 frames) the drone still sees the same scene a few seconds later, so the system keeps "closing" short loops that are really just re-localizations. A larger gap makes it detect only real revisits.
 
